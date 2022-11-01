@@ -5,3 +5,5 @@
 *.cubin
 *.fatbin
 bin/
+.ipynb_checkpoints/
+.jython_cache/
