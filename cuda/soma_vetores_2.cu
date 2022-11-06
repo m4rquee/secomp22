@@ -1,3 +1,4 @@
+#include <chrono>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -5,6 +6,8 @@
 
 #define N 100000000
 #define ERRO_MAX 1e-6
+
+using namespace std::chrono;
 
 __global__ void soma_vetores(float *out, float *a, float *b, int n) {
     int i = blockDim.x * blockIdx.x + threadIdx.x;
@@ -38,11 +41,13 @@ int main() {
     cudaMemcpy(d_b, b, sizeof(float) * N, cudaMemcpyHostToDevice);
 
     //############ COMPUTAÇÃO ############
+    auto comeco = std::chrono::high_resolution_clock::now();
     int threads = 1024;
     int blocos = ((N + threads) / threads);
     soma_vetores<<<blocos, threads>>>(d_out, d_a, d_b, N); // executa a soma
     cudaDeviceSynchronize(); // espera até o kernel finalizar
-    
+    auto fim = std::chrono::high_resolution_clock::now();
+
     //###### TRANSFERÊNCIA DE DADOS ######
     // Transfere os dados de volta da GPU:
     cudaMemcpy(out, d_out, sizeof(float) * N, cudaMemcpyDeviceToHost);
@@ -52,6 +57,9 @@ int main() {
         assert(fabs(out[i] - a[i] - b[i]) < ERRO_MAX);
     printf("out[0] = %.3f\n", out[0]);
     printf("A soma funcionou!\n");
+
+    double tempo_gasto = duration_cast<milliseconds>(fim - comeco).count();
+    printf("Tempo gasto: %.2lfms\n", tempo_gasto);
 
     // Libera os vetores:
     cudaFree(d_a);

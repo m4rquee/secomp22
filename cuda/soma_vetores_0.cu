@@ -1,9 +1,12 @@
+#include <chrono>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
 
 #define N 100000000
+
+using namespace std::chrono;
 
 void soma_vetores(float *out, float *a, float *b, int n) {
     for (int i = 0; i < n; i++)
@@ -25,9 +28,13 @@ int main() {
     }
 
     //############ COMPUTAÇÃO ############
+    auto comeco = std::chrono::high_resolution_clock::now();
     soma_vetores(out, a, b, N); // executa a soma
+    auto fim = std::chrono::high_resolution_clock::now();
 
     printf("out[0] = %.3f\n", out[0]);
+    double tempo_gasto = duration_cast<milliseconds>(fim - comeco).count();
+    printf("Tempo gasto: %.2lfms\n", tempo_gasto);
 
     // Libera os vetores:
     free(a); 
