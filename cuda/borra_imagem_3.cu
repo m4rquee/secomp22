@@ -1,8 +1,8 @@
+#include <chrono>
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
 #include <ctime>
-#include <sys/time.h>
 
 #define LARGURA_MASCARA 31// número ímpar
 #define RAIO 15           // (LARGURA_MASCARA - 1) / 2
@@ -11,6 +11,8 @@
 #define RGB_MAX 255
 
 #define LADO_BLOCO 32// os blocos 2D terão LADO_BLOCOxLADO_BLOCO threads
+
+using namespace std::chrono;
 
 void checacuda(const cudaError_t erro, const char *nome_arquivo, const int linha) {
     if (erro != cudaSuccess) {
@@ -272,7 +274,6 @@ void imagem_dos_canais(
 }
 
 int main() {
-    time_t comeco, fim;
     unsigned char *vermelho, *verde, *azul;// canais da imagem de entrada
     const char nome_arquivo[] = "/content/drive/MyDrive/secomp/nome_arquivo.ppm";
     const char nome_arquivo_out[] = "/content/drive/MyDrive/secomp/nome_arquivo_out.ppm";
@@ -282,18 +283,18 @@ int main() {
     PPMImagem *img_output = lePPM(nome_arquivo, 1);
     int tam = img->x * img->y;
 
-    time(&comeco);// ---------------------------
+    auto comeco = std::chrono::high_resolution_clock::now();
 
     canais_da_imagem(img, &vermelho, &verde, &azul, tam);
     borra_imagem(vermelho, verde, azul, img->x, img->y);
     CHECA_CUDA(cudaDeviceSynchronize());// espera até os kerneis finalizarem
     imagem_dos_canais(vermelho, verde, azul, img_output, tam);
 
-    time(&fim);// ------------------------------
+    auto fim = std::chrono::high_resolution_clock::now();
 
     escrevePPM(img_output, nome_arquivo_out);
-    double tempo_gasto = difftime(fim, comeco);
-    fprintf(stdout, "Tempo gasto: %.2lfs\n", tempo_gasto);
+    double tempo_gasto = duration_cast<milliseconds>(fim - comeco).count();
+    printf("Tempo gasto: %.2lfms\n", tempo_gasto);
 
     // Libera os dados alocados:
     free(img->imagem);
