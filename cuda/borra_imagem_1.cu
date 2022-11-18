@@ -90,7 +90,7 @@ PPMImagem *lePPM(const char *nome_arquivo, char pula_pixeis) {
     return img;
 }
 
-void escrevePPM(PPMImagem *img, const const char *nome_arquivo_out) {
+void escrevePPM(PPMImagem *img, const char *nome_arquivo_out) {
     FILE *fp = fopen(nome_arquivo_out, "wb");
     fprintf(fp, "P6\n");
     fprintf(fp, "# %s\n", COMENTARIO);
